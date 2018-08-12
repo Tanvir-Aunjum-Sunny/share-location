@@ -2,9 +2,11 @@ package playlagom.sharelocation.auth;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +42,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     FirebaseAuth firebaseAuth;
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
+    public static RelativeLayout RelativeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +51,12 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         getSupportActionBar().hide();
         setContentView(R.layout.activity_sign_up);
 
+        RelativeLayout =  findViewById(R.id.relativeLayout1);
+
         // check internet connection
         if (!isInternetOn()) {
+            showSnackbar();
             Toast.makeText(this, "Please ON your internet", Toast.LENGTH_LONG).show();
-            finish();
         }
         Log.d(TAG, "----onCreate: " + isInternetOn());
 
@@ -79,12 +85,37 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         if (v == btnSignUp) {
-            registerUser();
+            if(!isInternetOn()) {
+                showSnackbar();
+            }else {
+                registerUser();
+            }
         }
         if (v == btnLogin) {
             startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
             finish();
         }
+    }
+
+    public void showSnackbar() {
+        final Snackbar snackbar = Snackbar
+                .make(RelativeLayout, "No internet connection!", Snackbar.LENGTH_LONG)
+                .setAction("RETRY", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Snackbar snackbar1 = Snackbar.make(RelativeLayout,"Retry Login Using Your Connection Again",Snackbar.LENGTH_SHORT);
+                        snackbar1.show();
+                    }
+                });
+
+        // Changing message text color
+        snackbar.setActionTextColor(Color.RED);
+
+        // Changing action button text color
+        View sbView = snackbar.getView();
+        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(Color.WHITE);
+        snackbar.show();
     }
     // Paste this on activity from where you need to check internet status
     public boolean isInternetOn() {
